@@ -1,0 +1,19 @@
+image:
+  name: atlassian/default-image:2
+clone:
+  depth: 2
+pipelines:
+  default:
+    - step:
+        script:
+          # Following command makes an artefact containing the CloudFormation templates and config to deploy an ECS cluster
+          - apt-get install zip
+          - make build-zipfile
+          # The uploaded zip file wil trigger an AWS CodePipeline which will deploy the actual ECS cluster.
+          - pipe: atlassian/aws-s3-deploy:0.2.1
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION
+              S3_BUCKET: "{{ cookiecutter.artifact_s3_bucket }}"
+              LOCAL_PATH: "artefacts"

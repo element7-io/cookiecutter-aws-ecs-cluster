@@ -1,0 +1,15 @@
+{
+    "Parameters": {
+        "EnvironmentParam": "nonprod",
+        "VpcIdParam": "{{ cookiecutter.nonprod_vpc_id }}",
+        "PrivateSubnetsParam": "{{ cookiecutter.nonprod_private_subnets }}",
+        "PublicSubnetsParam": "{{ cookiecutter.nonprod_public_subnets }}",
+        "LogBucketNameParam": "{{ cookiecutter.log_bucket }}",
+        "SslCertificateArnParam": "{{ cookiecutter.ssl_certificate_arn }}",
+        "AlertSnsTopic": "{{cookiecutter.sns_alert_topic }}"
+    },
+    "Tags": {
+        "Squad": "{{ cookiecutter.squad_name }}",
+        "Environment": "nonprod"
+    }
+}

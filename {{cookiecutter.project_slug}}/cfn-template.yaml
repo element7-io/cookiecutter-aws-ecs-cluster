@@ -1,0 +1,398 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  {{ cookiecutter.project_short_description }}
+
+Parameters:
+  EnvironmentParam:
+    Type: String
+    Description: Specifies the name of the environment deployed by this stack
+    Default: nonprod
+  VpcIdParam:
+    Type: String
+    Description: The VPC id
+  PrivateSubnetsParam:
+    Type: String
+    Description: The list of private subnets (comma separated) that reside within the VPC
+  PublicSubnetsParam:
+    Type: String
+    Description: The list of public subnets (comma separated) that reside within the VPC
+  LogBucketNameParam:
+    Type: String
+    Description: Specifies CF stack that defines the log bucket.
+    Default: ""
+  SslCertificateArnParam:
+    Type: String
+    Description: Specifies the ARN of the SSL certificate to be used by the load balancers.
+  AlertSnsTopic:
+    Type: String
+    Description: Contains the ARN of the SNS topic on which alerts should be published.
+  AlbHttp5xxErrorsThresholdCount:
+    Type: Number
+    Description: Specifies the threshold of number of HTTP 5XX errors by ALB over a period of 15min.
+    Default: 10
+  AlbRejectedConnectionThresholdCount:
+    Type: Number
+    Description: Specifies the threshold of number of HTTP connections rejected by ALB over a period of 15 min.
+    Default: 5
+
+Conditions:
+  EnableLogging: !Not [ !Equals [ !Ref LogBucketNameParam, "" ] ]
+
+Resources:
+  # Your ECS cluster.
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-cluster-cf"
+
+  # This is an IAM role which authorizes ECS to manage resources on your account on your behalf, such
+  # as updating your load balancer with the details of where your containers are, so that traffic can
+  # reach your containers.
+  EcsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+          Action:
+            - 'sts:AssumeRole'
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              # Rules which allow ECS to attach network interfaces to instances
+              # on your behalf in order for awsvpc networking mode to work right
+              - 'ec2:AttachNetworkInterface'
+              - 'ec2:CreateNetworkInterface'
+              - 'ec2:CreateNetworkInterfacePermission'
+              - 'ec2:DeleteNetworkInterface'
+              - 'ec2:DeleteNetworkInterfacePermission'
+              - 'ec2:Describe*'
+              - 'ec2:DetachNetworkInterface'
+              # Rules which allow ECS to update load balancers on your behalf
+              # with the information sabout how to send traffic to your containers
+              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+            Resource: '*'
+
+  # This is a default role which is used by the ECS tasks themselves.
+  EcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs-tasks.amazonaws.com]
+          Action:
+            - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: AmazonECSTaskExecutionRolePolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                # Allow the ECS Tasks to download images from ECR
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:BatchGetImage'
+                # Allow the ECS tasks to upload logs to CloudWatch
+                - 'logs:CreateLogStream'
+                - 'logs:PutLogEvents'
+              Resource: '*'
+
+  # A security group for the containers we will run in Fargate. An ingress rule that allows communication
+  # between containers.
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "Allow inter-container communication on ${EcsCluster}."
+      VpcId: !Ref VpcIdParam
+      Tags:
+        - Key: Name
+          Value: !Sub "ecs-app-${EcsCluster}-cf"
+
+  EcsSecurityGroupIngressFromSelf:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from other containers in the same security group
+      GroupId: !Ref ContainerSecurityGroup
+      IpProtocol: tcp
+      FromPort: 49153
+      ToPort: 65535
+      SourceSecurityGroupId: !Ref ContainerSecurityGroup
+{% if cookiecutter.deploy_public_alb == "Y" %}
+  # Your public ALB
+  PublicAlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-cf"
+      Scheme: internet-facing
+      Subnets: !Split [",", !Ref PublicSubnetsParam]
+      SecurityGroups:
+        - !Ref PublicAlbSecurityGroup
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: true
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.enabled
+              Value: true
+            - !Ref AWS::NoValue
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.bucket
+              Value: !Ref LogBucketNameParam
+            - !Ref AWS::NoValue
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.prefix
+              Value: !Sub "ALB/{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-cf"
+            - !Ref AWS::NoValue
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-cf"
+
+  # A security group to allow access to the ALB. Only HTTPS traffic will be allowed.
+  PublicAlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "Allow traffic for ALB {{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-cf"
+      VpcId: !Ref VpcIdParam
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-sg-cf"
+
+  PublicAlbSecurityGroupIngressAllowHttps:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: "Ingress HTTPS requests"
+      GroupId: !Ref PublicAlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
+
+  EcsSecurityGroupIngressHttpFromPublicAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from public ALB
+      GroupId: !Ref PublicAlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref ContainerSecurityGroup
+
+  # The default target group for the public ALB.
+  PublicAlbDefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 300
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 4
+      UnhealthyThresholdCount: 3
+      Matcher:
+        HttpCode: "200"
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "20"
+      VpcId: !Ref VpcIdParam
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-default-cf"
+
+  PublicAlbHttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref PublicAlbDefaultTargetGroup
+      LoadBalancerArn: !Ref PublicAlb
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SslCertificateArnParam
+{% endif -%}
+
+{%- if cookiecutter.deploy_private_alb == "Y" %}
+  # Your private ALB
+  PrivateAlb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-cf"
+      Scheme: internal
+      Subnets: !Split [",", !Ref PrivateSubnetsParam]
+      SecurityGroups:
+        - !Ref PrivateAlbSecurityGroup
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: true
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.enabled
+              Value: true
+            - !Ref AWS::NoValue
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.bucket
+              Value: !Ref LogBucketNameParam
+            - !Ref AWS::NoValue
+        - Fn::If:
+            - EnableLogging
+            - Key: access_logs.s3.prefix
+              Value: !Sub "ALB/{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-cf"
+            - !Ref AWS::NoValue
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-cf"
+
+  # A security group to allow access to the ALB. Only HTTPS traffic will be allowed.
+  PrivateAlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub "Allow traffic for ALB {{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-cf"
+      VpcId: !Ref VpcIdParam
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-sg-cf"
+
+  PrivateAlbSecurityGroupIngressAllowHttps:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: "Ingress HTTPS requests"
+      GroupId: !Ref PrivateAlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+
+      CidrIp: 0.0.0.0/0
+  EcsSecurityGroupIngressHttpFromPrivateAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Ingress from private ALB
+      GroupId: !Ref PrivateAlbSecurityGroup
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !Ref ContainerSecurityGroup
+
+  # The default target group for the private ALB.
+  PrivateAlbDefaultTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 300
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 4
+      UnhealthyThresholdCount: 3
+      Matcher:
+        HttpCode: "200"
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "20"
+      VpcId: !Ref VpcIdParam
+      Tags:
+        - Key: Name
+          Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-private-alb-default-cf"
+
+  PrivateAlbHttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref PrivateAlbDefaultTargetGroup
+      LoadBalancerArn: !Ref PrivateAlb
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref SslCertificateArnParam
+{% endif %}
+# These are the values output by the CloudFormation template. Be careful about changing any of them, because 
+# of them are exported with specific names so that the other task related CF templates can use them.
+Outputs:
+  StackName:
+    Description: Stack name
+    Value: !Ref AWS::StackName
+  ClusterName:
+    Description: The name of the ECS cluster
+    Value: !Ref EcsCluster
+  ClusterSecurityGroup:
+    Description: A security group used to allow Fargate containers to receive traffic
+    Value: !Ref ContainerSecurityGroup
+  ClusterVpcId:
+    Description: "Vpc in which the Fargate cluster is running."
+    Value: !Ref VpcIdParam
+  ClusterPrivateSubnetIds:
+    Description: "Comma-separated list of private subnets in which the fargate containers should be configured to run."
+    Value: !Ref PrivateSubnetsParam
+  ClusterPublicSubnetIds:
+    Description: "Comma-separated list of public subnets in which the fargate containers can be configured to run."
+    Value: !Ref PublicSubnetsParam
+  EcsRole:
+    Description: The ARN of the ECS role
+    Value: !GetAtt EcsRole.Arn
+  EcsTaskExecutionRole:
+    Description: The ARN of the ECS role
+    Value: !GetAtt EcsTaskExecutionRole.Arn
+{%- if cookiecutter.deploy_public_alb == "Y" %}
+  PublicAlbArn:
+    Description: "ARN of the Public ALB"
+    Value: !Ref PublicAlb
+  PublicAlbName:
+    Description: "Name of the Public ALB"
+    Value: !GetAtt PublicAlb.LoadBalancerName
+  PublicAlbFullName:
+    Description: "Full name of the Public ALB"
+    Value: !GetAtt PublicAlb.LoadBalancerFullName
+  PublicAlbDnsName:
+    Description: "DNS name of Public ALB"
+    Value: !GetAtt PublicAlb.DNSName
+  PublicAlbHostedZoneId:
+    Description: "Route53 HostedZoneID of the Public ALB"
+    Value: !GetAtt PublicAlb.CanonicalHostedZoneID
+  PublicAlbHttpsListener:
+    Description: "ARN of HTTPS Listener of the Public ALB"
+    Value: !Ref PublicAlbHttpsListener
+  PublicAlbSecurityGroup:
+    Description: "ALB Security Group"
+    Value: !Ref PublicAlbSecurityGroup
+{%- endif -%}
+{% if cookiecutter.deploy_private_alb == "Y" %}
+  PrivateAlbArn:
+    Description: "ARN of the Private ALB"
+    Value: !Ref PrivateAlb
+  PrivateAlbName:
+    Description: "Name of the Private ALB"
+    Value: !GetAtt PrivateAlb.LoadBalancerName
+  PrivateAlbFullName:
+    Description: "Full name of the Private ALB"
+    Value: !GetAtt PrivateAlb.LoadBalancerFullName
+  PrivateAlbDnsName:
+    Description: "DNS name of Private ALB"
+    Value: !GetAtt PrivateAlb.DNSName
+  PrivateAlbHostedZoneId:
+    Description: "Route53 HostedZoneID of the Private ALB"
+    Value: !GetAtt PrivateAlb.CanonicalHostedZoneID
+  PrivateAlbHttpsListener:
+    Description: "ARN of HTTPS Listener of the Private ALB"
+    Value: !Ref PrivateAlbHttpsListener
+  PrivateAlbSecurityGroup:
+    Description: "ALB Security Group of the Private ALB"
+    Value: !Ref PrivateAlbSecurityGroup
+{%- endif -%}

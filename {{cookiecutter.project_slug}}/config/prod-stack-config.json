@@ -1,0 +1,15 @@
+{
+    "Parameters": {
+        "EnvironmentParam": "prod",
+        "VpcIdParam": "{{ cookiecutter.prod_vpc_id }}",
+        "PrivateSubnetsParam": "{{ cookiecutter.prod_private_subnets }}",
+        "PublicSubnetsParam": "{{ cookiecutter.prod_public_subnets }}",
+        "LogBucketNameParam": "{{ cookiecutter.log_bucket }}",
+        "SslCertificateArnParam": "{{ cookiecutter.ssl_certificate_arn }}",
+        "AlertSnsTopic": "{{cookiecutter.sns_alert_topic }}"
+    },
+    "Tags": {
+        "Squad": "{{ cookiecutter.squad_name }}",
+        "Environment": "prod"
+    }
+}
