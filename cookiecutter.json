@@ -7,6 +7,7 @@
     "aws_default_region": "{{ cookiecutter.aws_default_region }}",
     "artifact_s3_bucket": "{{ cookiecutter.artifact_s3_bucket }}",
     "log_bucket": "{{ cookiecutter.log_bucket }}",
+    "container_insights": ["enabled", "disabled"],
     "ssl_certificate_arn": "{{ cookiecutter.ssl_certificate_arn }}",
     "sns_alert_topic": "SNS Topic for alerts",
     "nonprod_vpc_id": "{{ cookiecutter.nonprod_vpc_id }}",

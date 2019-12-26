@@ -45,6 +45,9 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-cluster-cf"
+      ClusterSettings:
+        - Name: containerInsights
+          Value: "{{ cookiecutter.container_insights }}"
 
   # This is an IAM role which authorizes ECS to manage resources on your account on your behalf, such
   # as updating your load balancer with the details of where your containers are, so that traffic can
@@ -112,7 +115,7 @@ Resources:
                 - 'logs:PutLogEvents'
               Resource: '*'
 
-  # A security group for the containers we will run in Fargate. An ingress rule that allows communication
+  # A security group for the containers that will run in Fargate. An ingress rule that allows communication
   # between containers.
   ContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -122,7 +125,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "ecs-app-${EcsCluster}-cf"
-
   EcsSecurityGroupIngressFromSelf:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
