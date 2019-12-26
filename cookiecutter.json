@@ -5,7 +5,6 @@
     "cloudformation_stack_prefix": "CF name prefix (max. 9 chars)",
     "aws_account_id": "{{ cookiecutter.aws_account_id }}",
     "aws_default_region": "{{ cookiecutter.aws_default_region }}",
-    "squad_name": "{{ cookiecutter.squad_name }}",
     "artifact_s3_bucket": "{{ cookiecutter.artifact_s3_bucket }}",
     "log_bucket": "{{ cookiecutter.log_bucket }}",
     "ssl_certificate_arn": "{{ cookiecutter.ssl_certificate_arn }}",

@@ -70,26 +70,25 @@ default_context:
     # AWS settings
     aws_account_id: 123456789012
     aws_default_region: eu-west-1
-    squad_name: squadname
 
     # Project settings
-    project_name: aws-shared-infra
-    project_short_description:  ECS shared infrastructure
-    cloudformation_stack_prefix: shared1
+    project_name: blue-cluster
+    project_short_description:  ECS blue cluster
+    cloudformation_stack_prefix: blue
 
     # Global settings
-    artifact_s3_bucket: dpp-artifacts-123456789012-eu-west-1-cfn
-    log_bucket: dpp-logs-123456789012-eu-west-1-cfn
+    artifact_s3_bucket: artifacts-123456789012-eu-west-1-cfn
+    log_bucket: logs-123456789012-eu-west-1-cfn
     nonprod_vpc_id: vpc-05fa69ba5418644d0
     nonprod_private_subnets: subnet-05d97978360bbf284,subnet-0402dd4a8b2f9f1c5,subnet-08dda5b9666a7d78a
     nonprod_public_subnets: subnet-0d0637c225e99b181,subnet-0afa0895deffd2da7,subnet-091532bd37e5fad92
-    prod_vpc_id: vpc-0ae3bfd370f7710c9
-    prod_private_subnets: subnet-0fa6f94ad6a12f442,subnet-0ce1b90c33aac972d,subnet-062e66b2196de6ff7
-    prod_public_subnets: subnet-0743eaf0a96819de6,subnet-0c0cf652bb81a6e15,subnet-08a892565e8573f6f
+    prod_vpc_id: ""
+    prod_private_subnets: ""
+    prod_public_subnets: ""
     deploy_public_alb: Y
     deploy_private_alb: Y
     ssl_certificate_arn: arn:aws:acm:eu-west-1:123456789012:certificate/9ff25a70-da6c-4173-b47d-8274acaf0074
-    sns_alert_topic": arn:aws:sns:eu-west-1:123456789012:alerts-squadname
+    sns_alert_topic: arn:aws:sns:eu-west-1:123456789012:alerts
 ```
 
 *Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead).* If empty values are specified the environment will be omitted.
@@ -133,7 +132,7 @@ The SSL certifacte for the Application Load Balancer Lister
 The SNS Topic for alerting
 
 ## Usage
-1. Run cookiecutter in the directory where you usually checkout your git repo's. Cookiecutter will create a new sub-folder in this directory. You'll be asked a number of questions to help bootstrapping a new project.
+1. Run cookiecutter in the directory where you usually checkout your git repositories. Cookiecutter will create a new sub-folder in this directory. You'll be asked a number of questions to help bootstrapping a new project.
 
         $ cookiecutter --config-file .cookiecutter_example --no-input -f https://github.com/element7-io/cookiecutter-aws-ecs-cluster.git
 1. Move to the newly created project

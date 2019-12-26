@@ -9,7 +9,6 @@
         "AlertSnsTopic": "{{cookiecutter.sns_alert_topic }}"
     },
     "Tags": {
-        "Squad": "{{ cookiecutter.squad_name }}",
         "Environment": "nonprod"
     }
 }
