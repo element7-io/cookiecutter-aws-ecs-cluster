@@ -1,6 +1,6 @@
 # Cookiecutter aws-ecs-cluster
 
-Cookiecutter is a CLI utility that bootstraps projects from existing templates. **This repository contains an opinionated cookiecutter template to deploy an ECS cluster with ALB load balancers.** A project instantiated from this template can be used a hosting layer for other cookiecutters, such as [cookiecutter-java-docker](https://bitbucket.org/persgroep/cookiecutter-java-docker)
+Cookiecutter is a CLI utility that bootstraps projects from existing templates. **This repository contains a cookiecutter template to deploy an ECS cluster and ALB load balancers.** A project instantiated from this template can be used as hosting layer for  containers and other cookiecutter templates, such as [cookiecutter-java-docker](https://bitbucket.org/persgroep/cookiecutter-java-docker)
 
 ## Getting Started
 
@@ -32,9 +32,9 @@ For make and other Unix Utilities, you can download [unxUtils.1.0.0.1.nupkg](htt
 ```
 #### Required AWS Resources
 
-- **AWS CLI:** you should be logged in (using onelogin).
-- **Artefacts S3 bucket:** this bucket needs to be versioned.
-- **Logs bucket stack:** created from [https://bitbucket.org/persgroep/aws-iac-modules/src/master/cloudformation/storage/s3_log_bucket.yaml](https://bitbucket.org/persgroep/aws-iac-modules/src/master/cloudformation/storage/s3_log_bucket.yaml)
+- **AWS CLI:** you should be logged in into the AWS CLI.
+- **S3 bucket for the artefacts:** this bucket needs to be versioned.
+- **S3 bucket for the Logs**
 - **IAM user for the Bitbucket pipeline**
 	- This user should have only **"Programmatic access"** and **NO** "AWS Management Console access".
 	- The user should have only write access to your artefacts bucket.
@@ -62,9 +62,9 @@ For make and other Unix Utilities, you can download [unxUtils.1.0.0.1.nupkg](htt
 
 ### Configuration
 
-**Create a `.cookiecutterrc` file in your home directory.** Cookiecutter will use the values from this file as defaults when executing templates.
+**Create a cookiecutter config file containing the configuration for your service.** Cookiecutter will use the values from the config file as defaults when bootstrapping this template.
 
-Here's an axample of a `.cookiecutterrc` file:
+Find a cookiecutter config file example below:
 ```
 default_context:
     # AWS settings
@@ -92,7 +92,7 @@ default_context:
     sns_alert_topic": arn:aws:sns:eu-west-1:123456789012:alerts-squadname
 ```
 
-*Note: depending on the environments in your AWS account you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead).*
+*Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead).* If empty values are specified the environment will be omitted.
 
 #### aws\_account\_id
 The AWS account to deploy the ECS cluster in.
@@ -133,11 +133,9 @@ The SSL certifacte for the Application Load Balancer Lister
 The SNS Topic for alerting
 
 ## Usage
+1. Run cookiecutter in the directory where you usually checkout your git repo's. Cookiecutter will create a new sub-folder in this directory. You'll be asked a number of questions to help bootstrapping a new project.
 
-1. Run cookiecutter in the directory where you usually checkout your git repo's. Cookiecutter will create a new sub-folder in this directory. You'll be 
-prompted with a number of questions to help bootstrapping the new project.
-
-        $ cookiecutter -f git@bitbucket.org:persgroep/cookiecutter-aws-ecs-cluster.git
+        $ cookiecutter --config-file .cookiecutter_example --no-input -f https://github.com/element7-io/cookiecutter-aws-ecs-cluster.git
 1. Move to the newly created project
 
         $ cd yet-another-test-project
