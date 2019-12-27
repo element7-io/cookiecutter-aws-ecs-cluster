@@ -5,10 +5,24 @@ Parameters:
   ArtifactBucketName:
     Type: String
     Description: Name of the S3 bucket containing the deployable artifacts.
-    Default: "{{ cookiecutter.artifact_s3_bucket }}"
+    Default: {{ cookiecutter.artifact_s3_bucket }}
+  GitHubOAuthToken:
+    Type: String
+    NoEcho: true
+    MinLength: 40
+    MaxLength: 40
+    AllowedPattern: '[a-z0-9]*'
+  GitHubOwner:
+    Type: String
+    Default: {{ cookiecutter.github_owner }}
+  GitHubRepo:
+    Type: String
+    Default: {{ cookiecutter.github_repo }}
+  GitHubBranch:
+    Type: String
+    Default: {{ cookiecutter.github_branch }}
 
 Resources:
-
     # CodePipeline IAM Role
     CodePipelineServicenRole:
       Type: AWS::IAM::Role
@@ -101,7 +115,7 @@ Resources:
           - arn:aws:iam::aws:policy/AdministratorAccess
 
     # Definition of CodePipeline.
-    Pipeline:
+    ClusterCodePipeline:
         Type: AWS::CodePipeline::Pipeline
         Properties:
             ArtifactStore:
@@ -115,15 +129,32 @@ Resources:
                     - Name: BitbucketPipelineArtefact
                       ActionTypeId:
                         Category: Source
-                        Owner: AWS
-                        Provider: S3
+                        Owner: ThirdParty
+                        Provider: GitHub
                         Version: "1"
                       Configuration:
-                        S3Bucket: !Ref ArtifactBucketName
-                        S3ObjectKey: {{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}.zip
+                          Owner: !Ref GitHubOwner
+                          Repo: !Ref GitHubRepo
+                          Branch: !Ref GitHubBranch
+                          PollForSourceChanges: False
+                          OAuthToken: !Ref GitHubOAuthToken
                       OutputArtifacts:
                         - Name: SourceZip
                       RunOrder: 1
+                # - Name: Source
+                #   Actions:
+                #     - Name: BitbucketPipelineArtefact
+                #       ActionTypeId:
+                #         Category: Source
+                #         Owner: AWS
+                #         Provider: S3
+                #         Version: "1"
+                #       Configuration:
+                #         S3Bucket: !Ref ArtifactBucketName
+                #         S3ObjectKey: {{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}.zip
+                #       OutputArtifacts:
+                #         - Name: SourceZip
+                #       RunOrder: 1
 {% if cookiecutter.deploy_nonprod_resources == "Y" %}
                 - Name: NonProd
                   Actions:
@@ -164,3 +195,17 @@ Resources:
                         - Name: SourceZip
                       RunOrder: 1
 {% endif %}
+
+  GitHubPipelineWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref ClusterCodePipeline
+      TargetAction: Source
+      TargetPipelineVersion: !GetAtt ClusterCodePipeline.Version
+      RegisterWithThirdParty: True

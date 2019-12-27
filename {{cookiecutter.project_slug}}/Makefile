@@ -1,4 +1,3 @@
-
 CF_STACK_NAME={{ cookiecutter.pipeline_stackname }}
 PROJECT_NAME={{ cookiecutter.project_slug }}
 ARTIFACT_BUCKET={{ cookiecutter.artifact_s3_bucket }}
@@ -8,6 +7,13 @@ GREEN="\n\n\033[0;32m"
 YELLOW="\033[0;33m"
 RED="\033[0;31m"
 END=" \033[0m\n"
+
+check_defined = \
+		$(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error Undefined $1$(if $2, ($2))))
 
 clean:
 	@echo -e $(GREEN)Clean up...$(END)
@@ -28,13 +34,15 @@ build-zipfile:
 # initially because of a missing artefact. This is normal! Running the Bitbucket pipeline will
 # create the missing artefact and fix the CodePipeline.
 deploy-pipeline:
+	@:$(call check_defined, GITHUB_TOKEN)
 	@echo -e $(GREEN)Deploying Pipeline...$(END)
 	aws cloudformation create-stack --stack-name ${CF_STACK_NAME} \
 		--template-body file://cfn-pipeline.yaml \
 		--enable-termination-protection \
 		--capabilities CAPABILITY_IAM \
+		--parameters \
+			ParameterKey=GitHubOAuthToken,ParameterValue=${GITHUB_TOKEN} \
 		--timeout-in-minutes 15
-
 	@echo ""
 	@echo Waiting until Pipeline deployed...
 	@aws cloudformation wait stack-exists --stack-name ${CF_STACK_NAME}
