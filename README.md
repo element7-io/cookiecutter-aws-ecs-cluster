@@ -179,11 +179,3 @@ This cookiecutter template is **Community Driven**, so everybody within De Persg
 
 *This image can be edited with [draw.io](https://www.draw.io/). Find the source under /img/Cookiecutter_ecs.html.*
 
-
-
-	
-
-
-
-
-
