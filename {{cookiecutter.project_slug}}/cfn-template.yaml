@@ -164,6 +164,24 @@ Resources:
         - Key: Name
           Value: !Sub "{{ cookiecutter.cloudformation_stack_prefix }}-${EnvironmentParam}-public-alb-cf"
 
+  # Ensure the S3 bucket allows access for the  Access Logs for Your Application Load Balancer
+  # https://docs.aws.amazon.com/elasticloadbalancing/latest/application//load-balancer-access-logs.html#access-logging-bucket-permissions
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref LogBucketNameParam
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:PutObject
+            Effect: Allow
+            Principal:
+              AWS:
+                - "156460612806" # Allow ALB logs eu-west-1
+                - "054676820928" # Allow ALB logs eu-central-1
+                # For other regions: https://docs.aws.amazon.com/elasticloadbalancing/latest/application//load-balancer-access-logs.html#access-logging-bucket-permissions
+            Resource: !Sub ${LogBucketNameParam.Arn}/*
+
   # A security group to allow access to the ALB. Only HTTPS traffic will be allowed.
   PublicAlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
