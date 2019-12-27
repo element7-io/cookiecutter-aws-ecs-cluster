@@ -23,178 +23,178 @@ Parameters:
     Default: {{ cookiecutter.github_branch }}
 
 Resources:
-    # CodePipeline IAM Role
-    CodePipelineServicenRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: 2012-10-17
-          Statement:
-            - Action:
-                - sts:AssumeRole
-              Effect: Allow
-              Principal:
-                Service:
-                  - codepipeline.amazonaws.com
-        Path: /
-        Policies:
-          - PolicyName: DefaultCodePipelinePolicy
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Resource:
-                    - !Sub "arn:aws:s3:::${ArtifactBucketName}"
-                    - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
-                    - "arn:aws:s3:::codepipeline*"
-                    - "arn:aws:s3:::codepipeline*/*"
-                    - "arn:aws:s3:::elasticbeanstalk*"
-                    - "arn:aws:s3:::elasticbeanstalk*/*"
-                  Effect: Allow
-                  Action:
-                    - s3:*
-                - Resource: "*"
-                  Effect: Allow
-                  Action:
-                    - codebuild:BatchGetBuilds
-                    - codebuild:StartBuild
-                    - codecommit:GetBranch
-                    - codecommit:GetCommit
-                    - codecommit:UploadArchive
-                    - codecommit:GetUploadArchiveStatus
-                    - codecommit:CancelUploadArchive
-                    - codedeploy:CreateDeployment
-                    - codedeploy:GetApplicationRevision
-                    - codedeploy:GetDeployment
-                    - codedeploy:GetDeploymentConfig
-                    - codedeploy:RegisterApplicationRevision
-                    - ecs:DescribeServices
-                    - ecs:DescribeTaskDefinition
-                    - ecs:DescribeTasks
-                    - ecs:ListTasks
-                    - ecs:RegisterTaskDefinition
-                    - ecs:UpdateService
-                    - lambda:invokefunction
-                    - lambda:listfunctions
-          - PolicyName: CloudFormationAccess
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Resource: "*"
-                  Effect: Allow
-                  Action:
-                    - cloudformation:GetTemplate
-                    - cloudformation:CreateStack
-                    - cloudformation:DeleteStack
-                    - cloudformation:DescribeStacks
-                    - cloudformation:UpdateStack
-                    - cloudformation:DescribeStackResource
-                    - cloudformation:DescribeStackResources
-                    - cloudformation:DescribeStackEvents
-                    - cloudformation:CreateChangeSet
-                    - cloudformation:DeleteChangeSet
-                    - cloudformation:DescribeChangeSet
-                    - cloudformation:ExecuteChangeSet
-                    - cloudformation:SetStackPolicy
-                    - cloudformation:ValidateTemplate
-                    - iam:PassRole
-
-    CloudFormationExecutionRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: 2012-10-17
-          Statement:
-            Action:
+  # CodePipeline IAM Role
+  CodePipelineServicenRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
               - sts:AssumeRole
             Effect: Allow
             Principal:
               Service:
-                - cloudformation.amazonaws.com
-        Path: /
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/AdministratorAccess
+                - codepipeline.amazonaws.com
+      Path: /
+      Policies:
+        - PolicyName: DefaultCodePipelinePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}"
+                  - !Sub "arn:aws:s3:::${ArtifactBucketName}/*"
+                  - "arn:aws:s3:::codepipeline*"
+                  - "arn:aws:s3:::codepipeline*/*"
+                  - "arn:aws:s3:::elasticbeanstalk*"
+                  - "arn:aws:s3:::elasticbeanstalk*/*"
+                Effect: Allow
+                Action:
+                  - s3:*
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:UploadArchive
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:CancelUploadArchive
+                  - codedeploy:CreateDeployment
+                  - codedeploy:GetApplicationRevision
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                  - ecs:DescribeServices
+                  - ecs:DescribeTaskDefinition
+                  - ecs:DescribeTasks
+                  - ecs:ListTasks
+                  - ecs:RegisterTaskDefinition
+                  - ecs:UpdateService
+                  - lambda:invokefunction
+                  - lambda:listfunctions
+        - PolicyName: CloudFormationAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - cloudformation:GetTemplate
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:DescribeStackResources
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
+                  - iam:PassRole
 
-    # Definition of CodePipeline.
-    ClusterCodePipeline:
-        Type: AWS::CodePipeline::Pipeline
-        Properties:
-            ArtifactStore:
-                Location: !Ref ArtifactBucketName
-                Type: S3
-            Name: {{ cookiecutter.cloudformation_stack_prefix }}-pipeline-cfn
-            RoleArn: !GetAtt CodePipelineServicenRole.Arn
-            Stages:
-                - Name: Source
-                  Actions:
-                    - Name: BitbucketPipelineArtefact
-                      ActionTypeId:
-                        Category: Source
-                        Owner: ThirdParty
-                        Provider: GitHub
-                        Version: "1"
-                      Configuration:
-                          Owner: !Ref GitHubOwner
-                          Repo: !Ref GitHubRepo
-                          Branch: !Ref GitHubBranch
-                          PollForSourceChanges: False
-                          OAuthToken: !Ref GitHubOAuthToken
-                      OutputArtifacts:
-                        - Name: SourceZip
-                      RunOrder: 1
-                # - Name: Source
-                #   Actions:
-                #     - Name: BitbucketPipelineArtefact
-                #       ActionTypeId:
-                #         Category: Source
-                #         Owner: AWS
-                #         Provider: S3
-                #         Version: "1"
-                #       Configuration:
-                #         S3Bucket: !Ref ArtifactBucketName
-                #         S3ObjectKey: {{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}.zip
-                #       OutputArtifacts:
-                #         - Name: SourceZip
-                #       RunOrder: 1
-{% if cookiecutter.deploy_nonprod_resources == "Y" %}
-                - Name: NonProd
-                  Actions:
-                    - Name: DeployNonProdECSCluster
-                      ActionTypeId:
-                        Category: Deploy
-                        Owner: AWS
-                        Provider: CloudFormation
-                        Version: "1"
-                      Configuration:
-                        ActionMode: CREATE_UPDATE
-                        Capabilities: CAPABILITY_NAMED_IAM
-                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
-                        StackName: {{ cookiecutter.cloudformation_stack_prefix }}-nonprod-stack-cfn
-                        TemplatePath: SourceZip::cfn-template.yaml
-                        TemplateConfiguration: SourceZip::config/nonprod-stack-config.json
-                      InputArtifacts:
-                        - Name: SourceZip
-                      RunOrder: 1
-{% endif %}
-{% if cookiecutter.deploy_prod_resources == "Y" %}
-                - Name: Production
-                  Actions:
-                    - Name: DeployProductionECSCluster
-                      ActionTypeId:
-                        Category: Deploy
-                        Owner: AWS
-                        Provider: CloudFormation
-                        Version: "1"
-                      Configuration:
-                        ActionMode: CREATE_UPDATE
-                        Capabilities: CAPABILITY_NAMED_IAM
-                        RoleArn: !GetAtt CloudFormationExecutionRole.Arn
-                        StackName: {{ cookiecutter.cloudformation_stack_prefix }}-prod-stack-cfn
-                        TemplatePath: SourceZip::cfn-template.yaml
-                        TemplateConfiguration: SourceZip::config/prod-stack-config.json
-                      InputArtifacts:
-                        - Name: SourceZip
-                      RunOrder: 1
-{% endif %}
+  CloudFormationExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Action:
+            - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+              - cloudformation.amazonaws.com
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  # Definition of CodePipeline.
+  ClusterCodePipeline:
+      Type: AWS::CodePipeline::Pipeline
+      Properties:
+          ArtifactStore:
+              Location: !Ref ArtifactBucketName
+              Type: S3
+          Name: {{ cookiecutter.cloudformation_stack_prefix }}-pipeline-cfn
+          RoleArn: !GetAtt CodePipelineServicenRole.Arn
+          Stages:
+              - Name: Source
+                Actions:
+                  - Name: GitHubSourceAction
+                    ActionTypeId:
+                      Category: Source
+                      Owner: ThirdParty
+                      Provider: GitHub
+                      Version: "1"
+                    Configuration:
+                        Owner: !Ref GitHubOwner
+                        Repo: !Ref GitHubRepo
+                        Branch: !Ref GitHubBranch
+                        PollForSourceChanges: False
+                        OAuthToken: !Ref GitHubOAuthToken
+                    OutputArtifacts:
+                      - Name: SourceZip
+                    RunOrder: 1
+              # - Name: Source
+              #   Actions:
+              #     - Name: BitbucketPipelineArtefact
+              #       ActionTypeId:
+              #         Category: Source
+              #         Owner: AWS
+              #         Provider: S3
+              #         Version: "1"
+              #       Configuration:
+              #         S3Bucket: !Ref ArtifactBucketName
+              #         S3ObjectKey: {{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}.zip
+              #       OutputArtifacts:
+              #         - Name: SourceZip
+              #       RunOrder: 1
+{%- if cookiecutter.deploy_nonprod_resources == "Y" %}
+              - Name: NonProd
+                Actions:
+                  - Name: DeployNonProdECSCluster
+                    ActionTypeId:
+                      Category: Deploy
+                      Owner: AWS
+                      Provider: CloudFormation
+                      Version: "1"
+                    Configuration:
+                      ActionMode: CREATE_UPDATE
+                      Capabilities: CAPABILITY_NAMED_IAM
+                      RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                      StackName: {{ cookiecutter.cloudformation_stack_prefix }}-nonprod-stack-cfn
+                      TemplatePath: SourceZip::cfn-template.yaml
+                      TemplateConfiguration: SourceZip::config/nonprod-stack-config.json
+                    InputArtifacts:
+                      - Name: SourceZip
+                    RunOrder: 1
+{%- endif -%}
+{%- if cookiecutter.deploy_prod_resources == "Y" -%}
+              - Name: Production
+                Actions:
+                  - Name: DeployProductionECSCluster
+                    ActionTypeId:
+                      Category: Deploy
+                      Owner: AWS
+                      Provider: CloudFormation
+                      Version: "1"
+                    Configuration:
+                      ActionMode: CREATE_UPDATE
+                      Capabilities: CAPABILITY_NAMED_IAM
+                      RoleArn: !GetAtt CloudFormationExecutionRole.Arn
+                      StackName: {{ cookiecutter.cloudformation_stack_prefix }}-prod-stack-cfn
+                      TemplatePath: SourceZip::cfn-template.yaml
+                      TemplateConfiguration: SourceZip::config/prod-stack-config.json
+                    InputArtifacts:
+                      - Name: SourceZip
+                    RunOrder: 1
+{%- endif %}
 
   GitHubPipelineWebhook:
     Type: AWS::CodePipeline::Webhook
@@ -206,6 +206,6 @@ Resources:
         - JsonPath: "$.ref"
           MatchEquals: refs/heads/{Branch}
       TargetPipeline: !Ref ClusterCodePipeline
-      TargetAction: Source
+      TargetAction: GitHubSourceAction
       TargetPipelineVersion: !GetAtt ClusterCodePipeline.Version
       RegisterWithThirdParty: True

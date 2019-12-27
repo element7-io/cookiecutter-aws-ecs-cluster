@@ -7,7 +7,6 @@ Parameters:
   EnvironmentParam:
     Type: String
     Description: Specifies the name of the environment deployed by this stack
-    Default: nonprod
   VpcIdParam:
     Type: String
     Description: The VPC id
@@ -20,7 +19,6 @@ Parameters:
   LogBucketNameParam:
     Type: String
     Description: Specifies CF stack that defines the log bucket.
-    Default: ""
   SslCertificateArnParam:
     Type: String
     Description: Specifies the ARN of the SSL certificate to be used by the load balancers.
@@ -146,11 +144,11 @@ Resources:
         - !Ref PublicAlbSecurityGroup
       LoadBalancerAttributes:
         - Key: deletion_protection.enabled
-          Value: true
+          Value: "true"
         - Fn::If:
             - EnableLogging
             - Key: access_logs.s3.enabled
-              Value: true
+              Value: "true"
             - !Ref AWS::NoValue
         - Fn::If:
             - EnableLogging
@@ -242,11 +240,11 @@ Resources:
         - !Ref PrivateAlbSecurityGroup
       LoadBalancerAttributes:
         - Key: deletion_protection.enabled
-          Value: true
+          Value: "true"
         - Fn::If:
             - EnableLogging
             - Key: access_logs.s3.enabled
-              Value: true
+              Value: "true"
             - !Ref AWS::NoValue
         - Fn::If:
             - EnableLogging
