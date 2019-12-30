@@ -35,30 +35,6 @@ For make and other Unix Utilities, you can download [unxUtils.1.0.0.1.nupkg](htt
 - **AWS CLI:** you should be logged in into the AWS CLI.
 - **S3 bucket for the artefacts:** this bucket needs to be versioned.
 - **S3 bucket for the Logs**
-- **IAM user for the Bitbucket pipeline**
-	- This user should have only **"Programmatic access"** and **NO** "AWS Management Console access".
-	- The user should have only write access to your artefacts bucket.
-
-*IAM user policy example:*
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "ArtefactsBucketAccess",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:ListBucket"
-            ],
-            "Resource": [
-                "arn:aws:s3:::REPLACE-with-artefacts-bucket-name",
-                "arn:aws:s3:::REPLACE-with-artefacts-bucket-name/*"
-            ]
-        }
-    ]
-}
-```
 
 ### Configuration
 
@@ -93,43 +69,27 @@ default_context:
 
 *Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead).* If empty values are specified the environment will be omitted.
 
-#### aws\_account\_id
-The AWS account to deploy the ECS cluster in.
-#### aws\_default\_region
-The AWS region to deploy the  ECS cluster in.
-#### squad\_name
-Your team/squad name.
-#### project\_name:
-The name for the project. Cookiecutter will make a slug out of it by making it all lowercase and by replacing
+####Configuration values explained
+
+- **aws\_account\_id:**  The AWS account to deploy the ECS cluster in.
+- **aws\_default\_region:** The AWS region to deploy the  ECS cluster in.
+- **squad\_name:** Your team/squad name.
+- **project\_name:** The name for the project. Cookiecutter will make a slug out of it by making it all lowercase and by replacing
 whitespaces with dashes. Furthermore this slug will be used for naming resources and as you repository name.
-#### project\_short\_description
-The project's description.
-#### cloudformation\_stack\_prefix
-The prefix used to properly name the CloudFormation resources.
-#### artifact\_s3\_bucket
-The S3 bucket to store the artefacts.
-#### log\_bucket
-The S3 bucket to store the logs.
-#### nonprod\_vpc\_id
-The VPC ID for non-production.
-#### nonprod\_private\_subnets
-The private subnets of the non-production VPC.
-#### nonprod\_public\_subnets
-The public subnets of the non-production VPC.
-#### prod\_vpc\_id
-The VPC ID for production.
-#### prod\_private\_subnets
-The private subnets of the production VPC.
-#### prod\_public\_subnets
-The public subnets of the production VPC.
-#### deploy\_public\_alb
-'Y' to deploy the public Application Load Balancer
-#### deploy\_private\_alb
-'Y' to deploy the private Application Load Balancer
-#### ssl\_certificate\_arn
-The SSL certifacte for the Application Load Balancer Lister
-#### sns\_alert\_topic
-The SNS Topic for alerting
+- **project\_short\_description:** The project's description.
+- **cloudformation\_stack\_prefix:** The prefix used to properly name the CloudFormation resources.
+- **artifact\_s3\_bucket:** The S3 bucket to store the artefacts.
+- **log\_bucket:** The S3 bucket to store the logs.
+- **nonprod\_vpc\_id:** The VPC ID for non-production.
+- **nonprod\_private\_subnets:** The private subnets of the non-production VPC.
+- **nonprod\_public\_subnets:** The public subnets of the non-production VPC.
+- **prod\_vpc\_id:** The VPC ID for production.
+- **prod\_private\_subnets**: The private subnets of the production VPC.
+- **prod\_public\_subnets:** The public subnets of the production VPC.
+- **deploy\_public\_alb: **'Y' to deploy the public Application Load Balancer
+- **deploy\_private\_alb:** 'Y' to deploy the private Application Load Balancer
+- **ssl\_certificate\_arn:** The SSL certifacte for the Application Load Balancer Lister
+- **sns\_alert\_topic:** The SNS Topic for alerting
 
 ## Usage
 1. Run cookiecutter in the directory where you usually checkout your git repositories. Cookiecutter will create a new sub-folder in this directory. You'll be asked a number of questions to help bootstrapping a new project.
