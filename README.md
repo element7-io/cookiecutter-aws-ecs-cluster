@@ -91,7 +91,7 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
 - **prod\_vpc\_id:** The VPC ID for production.
 - **prod\_private\_subnets**: The private subnets of the production VPC.
 - **prod\_public\_subnets:** The public subnets of the production VPC.
-- **deploy\_public\_alb: **'Y' to deploy the public Application Load Balancer
+- **deploy\_public\_alb:** 'Y' to deploy the public Application Load Balancer
 - **deploy\_private\_alb:** 'Y' to deploy the private Application Load Balancer
 - **ssl\_certificate\_arn:** The SSL certifacte for the Application Load Balancer Lister
 - **sns\_alert\_topic:** The SNS Topic for alerting
