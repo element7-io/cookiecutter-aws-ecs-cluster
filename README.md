@@ -67,9 +67,9 @@ default_context:
     sns_alert_topic: arn:aws:sns:eu-west-1:123456789012:alerts
 ```
 
-*Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead).* If empty values are specified the environment will be omitted.
+:warning: *Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead). If empty values are specified the environment will be omitted.*
 
-####Configuration values explained
+#### Configuration values explained
 
 - **aws\_account\_id:**  The AWS account to deploy the ECS cluster in.
 - **aws\_default\_region:** The AWS region to deploy the  ECS cluster in.
