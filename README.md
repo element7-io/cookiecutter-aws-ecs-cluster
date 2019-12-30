@@ -45,11 +45,16 @@ default_context:
     aws_default_region: eu-west-1
 
     # Project settings
-    project_name: blue-cluster
-    project_short_description:  ECS blue cluster
-    cloudformation_stack_prefix: blue
+    project_name: ECS Blue Cluster
+    project_short_description: A Cookiecutter generated ECS cluster example
+    cloudformation_stack_prefix: ecs-blue
 
-    # Global settings
+    # Source
+    github_owner: github-owner
+    github_repo: ecs-blue-cluster
+    github_branch: master
+
+    container_insights: enabled
     artifact_s3_bucket: artifacts-123456789012-eu-west-1-cfn
     log_bucket: logs-123456789012-eu-west-1-cfn
     nonprod_vpc_id: vpc-05fa69ba5418644d0
@@ -70,11 +75,14 @@ default_context:
 
 - **aws\_account\_id:**  The AWS account to deploy the ECS cluster in.
 - **aws\_default\_region:** The AWS region to deploy the  ECS cluster in.
-- **squad\_name:** Your team/squad name.
 - **project\_name:** The name for the project. Cookiecutter will make a slug out of it by making it all lowercase and by replacing
 whitespaces with dashes. Furthermore this slug will be used for naming resources and as you repository name.
 - **project\_short\_description:** The project's description.
 - **cloudformation\_stack\_prefix:** The prefix used to properly name the CloudFormation resources.
+- **github\_owner:** GitHub owner.
+- **github\_repo:** GitHub repository name.
+- **github\_branch:** Git branch.
+- **container\_insights:** enable/disable ECS container insights.
 - **artifact\_s3\_bucket:** The S3 bucket to store the artefacts.
 - **log\_bucket:** The S3 bucket to store the logs.
 - **nonprod\_vpc\_id:** The VPC ID for non-production.
