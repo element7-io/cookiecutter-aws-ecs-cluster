@@ -180,7 +180,7 @@ Resources:
                 - "156460612806" # Allow ALB logs eu-west-1
                 - "054676820928" # Allow ALB logs eu-central-1
                 # For other regions: https://docs.aws.amazon.com/elasticloadbalancing/latest/application//load-balancer-access-logs.html#access-logging-bucket-permissions
-            Resource: !Sub ${LogBucketNameParam.Arn}/*
+            Resource: !Sub arn:aws:s3:::${LogBucketNameParam}/*
 
   # A security group to allow access to the ALB. Only HTTPS traffic will be allowed.
   PublicAlbSecurityGroup:
