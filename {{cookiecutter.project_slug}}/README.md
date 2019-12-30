@@ -17,7 +17,7 @@ To setup a pipeline for installing and maintaining the ECS Cluster deploy the Cl
 More information about using GitHub as a source for AWS CodePipeline can be found here:  [Create a Webhook for a GitHub Source (AWS CloudFormation Template)](https://docs.aws.amazon.com/codepipeline/latest/userguide/pipelines-webhooks-create-cfn.html)
 
 ## Usage
-This repository contains a series of re-usable/shared resources that can be used to host projects initiated from [cookiecutter-java-docker](https://bitbucket.org/persgroep/cookiecutter-java-docker).
+This repository contains a series of re-usable/shared resources that can be used to host projects initiated from [cookiecutter-aws-ecs-service](https://github.com/element7-io/cookiecutter-aws-ecs-service).
 
 You can add any additional resource (eg. RDS instance) to the `cfn-template.yaml` template file.
 After committing your changes the pipeline will automatically deploy these changes on CloudFormation.

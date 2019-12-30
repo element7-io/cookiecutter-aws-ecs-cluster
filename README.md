@@ -26,10 +26,7 @@ sudo choco install python
 sudo choco install awscli
 pip install cookiecutter
 ```
-For make and other Unix Utilities, you can download [unxUtils.1.0.0.1.nupkg](https://artifactory.persgroep.cloud/artifactory/ext-release-local/org/chocolatey/UnxUtils/1.0.0.1/unxUtils.1.0.0.1.nupkg)
-```
- sudo choco install unxUtils.1.0.0.1.nupkg
-```
+
 #### Required AWS Resources
 
 - **AWS CLI:** you should be logged in into the AWS CLI.
@@ -105,37 +102,17 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
         git add .
         git commit -m "Initial setup"
 
-1. Create a new repository in Bitbucket.
+1. Create a new Git repository.
+1. Push your code to Git.
+1. To finish to setup read the `README.md` file in the newly created project.
 
-1. Push your code to BitBucket.
-
-        git remote add origin git@bitbucket.org:persgroep/yet-another-test-project.git
-        git push -u origin master
-
-1. Enable **Bitbucket pipelines** for your new repository.
-    - Enable pipelines:`Settings` > `Pipelines` > `Settings` > Enable Pipelines
-    - Add environment variables:
- 		- `Settings` > `Pipelines` > `Repository variables` and add:
-        	- `AWS_ACCESS_KEY_ID`
-        	- `AWS_SECRET_ACCESS_KEY` (as secured variable).
-        	- `AWS_DEFAULT_REGION` (most likely 'eu-west-1')
-
-1. Deploy the Pipeline. (this step also creates the ECR repository to contain the docker images).
-
-        make deploy-pipeline
-        
-	***Important note: this is a typical "chicken or egg" case. The AWS CodePipeline will fail initially because of a missing artefact. This is normal! Running the Bitbucket pipeline will create the missing artefact and fix the CodePipeline.***
-	
-1. Push a change to Bitbucket to trigger the Bitbucket pipeline (which will then trigger the AWS CodePipeline). The AWS CodePipeline should now create your ECS cluster(s). 
 
 ## Contributing
-This cookiecutter template is **Community Driven**, so everybody within De Persgroep is free to contribute. Read the [Contributors' Guide](CONTRIBUTING.md) for details on how-to contribute.
+This cookiecutter template is **Community Driven**, so everybody is free to contribute. Read the [Contributors' Guide](CONTRIBUTING.md) for details on how-to contribute.
 
 ## Architecture
-
 *Note: depending on the options you choose when executing the template certain components will not be deployed. The diagram below reflects the situation when* ***ALL*** *components are deployed.*
 
 ![Architecture overview](img/Cookiecutter_ecs.png)
 
 *This image can be edited with [draw.io](https://www.draw.io/). Find the source under /img/Cookiecutter_ecs.html.*
-
