@@ -1,6 +1,6 @@
 # Cookiecutter aws-ecs-cluster
 
-Cookiecutter is a CLI utility that bootstraps projects from existing templates. **This repository contains a cookiecutter template to deploy an ECS cluster and ALB load balancers.** A project instantiated from this template can be used as hosting layer for  containers and other cookiecutter templates, such as [cookiecutter-java-docker](https://bitbucket.org/persgroep/cookiecutter-java-docker)
+Cookiecutter is a tool that creates projects from project templates. **This repository contains a project template to deploy an ECS cluster and ALB load balancers.** A project instantiated from this template can be used as hosting layer for Docker containers and other cookiecutter templates, such as [cookiecutter-aws-ecs-service](https://github.com/element7-io/cookiecutter-aws-ecs-service)
 
 ## Getting Started
 
