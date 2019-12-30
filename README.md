@@ -112,7 +112,7 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
 
 1. Create a new Git repository.
 1. Push your code to Git.
-1. To finish to setup read the `README.md` file in the newly created project.
+1. **To finish the setup read the `README.md` file in the newly created project.**
 
 
 ## Contributing
