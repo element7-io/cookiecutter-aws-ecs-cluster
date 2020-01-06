@@ -97,7 +97,7 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
 - **sns\_alert\_topic:** The SNS Topic for alerting
 
 ## Usage
-1. Run cookiecutter in the directory where you usually checkout your git repositories. Cookiecutter will create a new sub-folder in this directory. You'll be asked a number of questions to help bootstrapping a new project.
+1. Run cookiecutter in the directory where you usually checkout your git repositories. Cookiecutter will create a new sub-folder in this directory.
 
         $ cookiecutter --config-file .cookiecutter_example --no-input -f https://github.com/element7-io/cookiecutter-aws-ecs-cluster.git
 1. Move to the newly created project
