@@ -110,8 +110,8 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
         git add .
         git commit -m "Initial setup"
 
-1. Create a new Git repository.
-1. Push your code to Git.
+1. Create a new GitHub repository.
+1. Push your code to GitHub.
 1. **To finish the setup read the `README.md` file in the newly created project.**
 
 
