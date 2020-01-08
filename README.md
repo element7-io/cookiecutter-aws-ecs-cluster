@@ -32,6 +32,7 @@ pip install cookiecutter
 - **AWS CLI:** you should be logged in into the AWS CLI.
 - **S3 bucket for the artefacts:** this bucket needs to be versioned.
 - **S3 bucket for the Logs**
+- **A GitHub repository**
 
 ### Configuration
 
@@ -110,7 +111,7 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
         git add .
         git commit -m "Initial setup"
 
-1. Create a new GitHub repository.
+1. Create a new GitHub repository corresponding the values specified in the cookiecutter config file (github_owner, github_repo, github_branch).
 1. Push your code to GitHub.
 1. **To finish the setup read the `README.md` file in the newly created project.**
 
