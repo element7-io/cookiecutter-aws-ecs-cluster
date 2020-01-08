@@ -1,12 +1,11 @@
-CF_STACK_NAME={{ cookiecutter.pipeline_stackname }}
-PROJECT_NAME={{ cookiecutter.project_slug }}
-ARTIFACT_BUCKET={{ cookiecutter.artifact_s3_bucket }}
-
 SHELL=bash
 GREEN="\n\n\033[0;32m"
 YELLOW="\033[0;33m"
 RED="\033[0;31m"
 END=" \033[0m\n"
+
+CF_STACK_NAME={{ cookiecutter.pipeline_stackname }}
+PROJECT_NAME={{ cookiecutter.project_slug }}
 
 check_defined = \
 		$(strip $(foreach 1,$1, \
@@ -15,24 +14,6 @@ __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
 
-clean:
-	@echo -e $(GREEN)Clean up...$(END)
-	test ! -f ${PROJECT_NAME}.zip || rm -f ${PROJECT_NAME}.zip
-.PHONY: clean
-
-build-zipfile:
-	@echo -e $(GREEN)Building zip file...$(END)
-	mkdir -p artefacts/${PROJECT_NAME}
-	test ! -d dist || rm -rf dist
-	mkdir dist dist/config
-	cp -v -r cfn-*.yaml config/ dist/
-	cd dist && zip -r ../artefacts/${PROJECT_NAME}/${PROJECT_NAME}.zip *
-	@echo ""
-.PHONY: build-zipfile
-
-# Important note: this is a typical "chicken or egg" case. The AWS CodePipeline will fail
-# initially because of a missing artefact. This is normal! Running the Bitbucket pipeline will
-# create the missing artefact and fix the CodePipeline.
 deploy-pipeline:
 	@:$(call check_defined, GITHUB_TOKEN)
 	@echo -e $(GREEN)Deploying Pipeline...$(END)
@@ -52,3 +33,18 @@ deploy-pipeline:
 	@echo -e You will need to invoke the Bitbucket pipline to create the msssing artefact and fix the AWS CodePipeline.$(END)
 	@echo ""
 .PHONY: deploy-pipeline
+
+clean:
+	@echo -e $(GREEN)Clean up...$(END)
+	test ! -f ${PROJECT_NAME}.zip || rm -f ${PROJECT_NAME}.zip
+.PHONY: clean
+
+build-zipfile:
+	@echo -e $(GREEN)Building zip file...$(END)
+	mkdir -p artefacts/${PROJECT_NAME}
+	test ! -d dist || rm -rf dist
+	mkdir dist dist/config
+	cp -v -r cfn-*.yaml config/ dist/
+	cd dist && zip -r ../artefacts/${PROJECT_NAME}/${PROJECT_NAME}.zip *
+	@echo ""
+.PHONY: build-zipfile
