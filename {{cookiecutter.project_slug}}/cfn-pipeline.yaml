@@ -6,13 +6,13 @@ Parameters:
     Type: String
     Description: Name of the S3 bucket containing the deployable artifacts.
     Default: {{ cookiecutter.artifact_s3_bucket }}
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
   GitHubOAuthToken:
     Type: String
     NoEcho: true
     MinLength: 40
     MaxLength: 40
     AllowedPattern: '[a-z0-9]*'
-{%- if cookiecutter.vcs_tool.lower() == "github" %}
   GitHubOwner:
     Type: String
     Default: {{ cookiecutter.github_owner }}
@@ -205,6 +205,7 @@ Resources:
                     RunOrder: 1
 {%- endif %}
 
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
   GitHubPipelineWebhook:
     Type: AWS::CodePipeline::Webhook
     Properties:
@@ -218,3 +219,4 @@ Resources:
       TargetAction: GitHubSourceAction
       TargetPipelineVersion: !GetAtt ClusterCodePipeline.Version
       RegisterWithThirdParty: True
+{%- endif -%}

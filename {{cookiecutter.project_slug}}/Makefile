@@ -7,22 +7,28 @@ END=" \033[0m\n"
 CF_STACK_NAME={{ cookiecutter.pipeline_stackname }}
 PROJECT_NAME={{ cookiecutter.project_slug }}
 
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
 check_defined = \
 		$(strip $(foreach 1,$1, \
         $(call __check_defined,$1,$(strip $(value 2)))))
 __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
+{%- endif -%}
 
 deploy-pipeline:
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
 	@:$(call check_defined, GITHUB_TOKEN)
+{%- endif -%}
 	@echo -e $(GREEN)Deploying Pipeline...$(END)
 	aws cloudformation create-stack --stack-name ${CF_STACK_NAME} \
 		--template-body file://cfn-pipeline.yaml \
 		--enable-termination-protection \
 		--capabilities CAPABILITY_IAM \
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
 		--parameters \
 			ParameterKey=GitHubOAuthToken,ParameterValue=${GITHUB_TOKEN} \
+{%- endif -%}
 		--timeout-in-minutes 15
 	@echo ""
 	@echo Waiting until Pipeline deployed...

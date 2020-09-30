@@ -52,6 +52,7 @@ default_context:
 
     # Source
     vcs_tool: github
+    bitbucket_connection: ""
     github_owner: github-owner
     git_repo: ecs-blue-cluster
     git_branch: master
@@ -82,8 +83,8 @@ whitespaces with dashes. Furthermore this slug will be used for naming resources
 - **project\_short\_description:** The project's description.
 - **cloudformation\_stack\_prefix:** The prefix used to properly name the CloudFormation resources.
 - **vcs\_tool:** The Version Control System to use. Should be 'github' or 'bitbucket'.
-- **bitbucket\_connection:** Codestar connection ARN to connect Bitbucket. Required if vcs\_tool is bitbucket.
-- **github\_owner:** GitHub owner. Required if vcs\_tool is github.
+- **bitbucket\_connection:** Codestar connection ARN to connect Bitbucket. Required if vcs\_tool is bitbucket otherwise provide an empty string.
+- **github\_owner:** GitHub owner. Required if vcs\_tool is github otherwise provide an empty string.
 - **git\_repo:** Git repository name.
 - **git\_branch:** Git branch.
 - **container\_insights:** enable/disable ECS container insights.
