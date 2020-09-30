@@ -12,15 +12,22 @@ Parameters:
     MinLength: 40
     MaxLength: 40
     AllowedPattern: '[a-z0-9]*'
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
   GitHubOwner:
     Type: String
     Default: {{ cookiecutter.github_owner }}
-  GitHubRepo:
+{%- endif -%}
+{%- if cookiecutter.vcs_tool.lower() == "bitbucket" %}
+  BitBucketConnection:
     Type: String
-    Default: {{ cookiecutter.github_repo }}
-  GitHubBranch:
+    Default: {{ cookiecutter.bitbucket_connection }}
+{%- endif -%}
+  GitRepo:
     Type: String
-    Default: {{ cookiecutter.github_branch }}
+    Default: {{ cookiecutter.git_repo }}
+  GitBranch:
+    Type: String
+    Default: {{ cookiecutter.git_branch }}
 
 Resources:
   # CodePipeline IAM Role
@@ -126,6 +133,7 @@ Resources:
           Stages:
               - Name: Source
                 Actions:
+{%- if cookiecutter.vcs_tool.lower() == "github" %}
                   - Name: GitHubSourceAction
                     ActionTypeId:
                       Category: Source
@@ -134,27 +142,28 @@ Resources:
                       Version: "1"
                     Configuration:
                         Owner: !Ref GitHubOwner
-                        Repo: !Ref GitHubRepo
-                        Branch: !Ref GitHubBranch
+                        Repo: !Ref GitRepo
+                        Branch: !Ref GitBranch
                         PollForSourceChanges: False
                         OAuthToken: !Ref GitHubOAuthToken
                     OutputArtifacts:
                       - Name: SourceZip
-                    RunOrder: 1
-              # - Name: Source
-              #   Actions:
-              #     - Name: BitbucketPipelineArtefact
-              #       ActionTypeId:
-              #         Category: Source
-              #         Owner: AWS
-              #         Provider: S3
-              #         Version: "1"
-              #       Configuration:
-              #         S3Bucket: !Ref ArtifactBucketName
-              #         S3ObjectKey: {{ cookiecutter.project_slug }}/{{ cookiecutter.project_slug }}.zip
-              #       OutputArtifacts:
-              #         - Name: SourceZip
-              #       RunOrder: 1
+{%- endif -%}
+{%- if cookiecutter.vcs_tool.lower() == "bitbucket" %}
+                  - Name: BitbucketSource
+                    ActionTypeId:
+                      Category: Source
+                      Owner: AWS
+                      Provider: CodeStarSourceConnection
+                      Version: "1"
+                    Configuration:
+                      ConnectionArn: !Ref BitBucketConnection
+                      FullRepositoryId: !Ref GitBranch
+                      BranchName: !Ref GitBranch
+                      OutputArtifactFormat: CODE_ZIP
+                    OutputArtifacts:
+                      - Name: SourceZip
+{%- endif -%}
 {%- if cookiecutter.deploy_nonprod_resources == "Y" %}
               - Name: NonProd
                 Actions:

@@ -32,7 +32,7 @@ pip install cookiecutter
 - **AWS CLI:** you should be logged in into the AWS CLI.
 - **S3 bucket for the artefacts:** this bucket needs to be versioned.
 - **S3 bucket for the Logs**
-- **A GitHub repository**
+- **A GitHub or Bitbucket repository**
 
 ### Configuration
 
@@ -51,9 +51,10 @@ default_context:
     cloudformation_stack_prefix: ecs-blue
 
     # Source
+    vcs_tool: github
     github_owner: github-owner
-    github_repo: ecs-blue-cluster
-    github_branch: master
+    git_repo: ecs-blue-cluster
+    git_branch: master
 
     container_insights: enabled
     artifact_s3_bucket: artifacts-123456789012-eu-west-1-cfn
@@ -80,9 +81,11 @@ default_context:
 whitespaces with dashes. Furthermore this slug will be used for naming resources and as you repository name.
 - **project\_short\_description:** The project's description.
 - **cloudformation\_stack\_prefix:** The prefix used to properly name the CloudFormation resources.
-- **github\_owner:** GitHub owner.
-- **github\_repo:** GitHub repository name.
-- **github\_branch:** Git branch.
+- **vcs\_tool:** The Version Control System to use. Should be 'github' or 'bitbucket'.
+- **bitbucket\_connection:** Codestar connection ARN to connect Bitbucket. Required if vcs\_tool is bitbucket.
+- **github\_owner:** GitHub owner. Required if vcs\_tool is github.
+- **git\_repo:** Git repository name.
+- **git\_branch:** Git branch.
 - **container\_insights:** enable/disable ECS container insights.
 - **artifact\_s3\_bucket:** The S3 bucket to store the artefacts.
 - **log\_bucket:** The S3 bucket to store the logs.
