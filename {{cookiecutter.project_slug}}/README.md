@@ -19,7 +19,7 @@ More information about using GitHub as a source for AWS CodePipeline can be foun
 {%- endif -%}
 {%- if cookiecutter.vcs_tool.lower() == "bitbucket" %}
 1. run: `make deploy-pipeline`
-{%- endif -%}
+{%- endif %}
 
 ## Usage
 This repository contains a series of re-usable/shared resources that can be used to host projects initiated from [cookiecutter-aws-ecs-service](https://github.com/element7-io/cookiecutter-aws-ecs-service).
