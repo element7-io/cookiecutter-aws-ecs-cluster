@@ -14,21 +14,21 @@ check_defined = \
 __check_defined = \
     $(if $(value $1),, \
       $(error Undefined $1$(if $2, ($2))))
-{%- endif -%}
+{% endif %}
 
 deploy-pipeline:
-{%- if cookiecutter.vcs_tool.lower() == "github" %}
+{%- if cookiecutter.vcs_tool.lower() == "github" -%}
 	@:$(call check_defined, GITHUB_TOKEN)
-{%- endif -%}
+{% endif %}
 	@echo -e $(GREEN)Deploying Pipeline...$(END)
 	aws cloudformation create-stack --stack-name ${CF_STACK_NAME} \
 		--template-body file://cfn-pipeline.yaml \
 		--enable-termination-protection \
 		--capabilities CAPABILITY_IAM \
-{%- if cookiecutter.vcs_tool.lower() == "github" %}
+{%- if cookiecutter.vcs_tool.lower() == "github" -%}
 		--parameters \
 			ParameterKey=GitHubOAuthToken,ParameterValue=${GITHUB_TOKEN} \
-{%- endif -%}
+{% endif %}
 		--timeout-in-minutes 15
 	@echo ""
 	@echo Waiting until Pipeline deployed...
