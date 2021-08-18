@@ -43,12 +43,12 @@ Find a cookiecutter config file example below:
 default_context:
     # AWS settings
     aws_account_id: 123456789012
-    aws_default_region: eu-west-1
+    aws_default_region: some-aws-region
 
     # Project settings
-    project_name: ECS Blue Cluster
+    project_name: ECS Cluster
     project_short_description: A Cookiecutter generated ECS cluster example
-    cloudformation_stack_prefix: ecs-blue
+    cloudformation_stack_prefix: shared-infra-x
 
     # Source
     vcs_tool: github
@@ -58,18 +58,18 @@ default_context:
     git_branch: master
 
     container_insights: enabled
-    artifact_s3_bucket: artifacts-123456789012-eu-west-1-cfn
-    log_bucket: logs-123456789012-eu-west-1-cfn
-    nonprod_vpc_id: vpc-05fa69ba5418644d0
-    nonprod_private_subnets: subnet-05d97978360bbf284,subnet-0402dd4a8b2f9f1c5,subnet-08dda5b9666a7d78a
-    nonprod_public_subnets: subnet-0d0637c225e99b181,subnet-0afa0895deffd2da7,subnet-091532bd37e5fad92
+    artifact_s3_bucket: some-bucket-name
+    log_bucket: some-bucket-name
+    nonprod_vpc_id: vpc-xyz
+    nonprod_private_subnets: subnet-x,subnet-y,subnet-z
+    nonprod_public_subnets: subnet-a,subnet-b,subnet-c
     prod_vpc_id: ""
     prod_private_subnets: ""
     prod_public_subnets: ""
     deploy_public_alb: Y
     deploy_private_alb: Y
-    ssl_certificate_arn: arn:aws:acm:eu-west-1:123456789012:certificate/9ff25a70-da6c-4173-b47d-8274acaf0074
-    sns_alert_topic: arn:aws:sns:eu-west-1:123456789012:alerts
+    ssl_certificate_arn: arn:aws:acm:...
+    sns_alert_topic: arn:aws:sns:...
 ```
 
 :warning: *Note: depending on the your preferences you should/could provide empty values for the prod or nonprod variables (don't omit these variables as this will break Cookiecutter, use empty strings as value instead). If empty values are specified the environment will be omitted.*
